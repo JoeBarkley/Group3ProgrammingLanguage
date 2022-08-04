@@ -2,94 +2,78 @@ USE_LR_PARSER
 
 program
 
-(* ---------- Precedence and associativity of operators -------------------------------------------------- *)
-%LEFT_ASSOC   "or"                                                            "L0" .(* lowest prec *)
-%LEFT_ASSOC   "and"                                                           "L1" .
-%LEFT_ASSOC   "=="                                                            "L2" .
-%LEFT_ASSOC   "!="                                                            "L2" .
-%LEFT_ASSOC   "<"                                                             "L2" .
-%LEFT_ASSOC   ">"                                                             "L2" .
-%LEFT_ASSOC   "+"                                                             "L3" .
-%LEFT_ASSOC   "-"                                                             "L3" .
-%LEFT_ASSOC   "/"                                                             "L4" .
-%LEFT_ASSOC   "%"                                                             "L4" .
-%LEFT_ASSOC   "*"                                                             "L4" .
-%LEFT_ASSOC   "not"                                                           "L5" .
-%LEFT_ASSOC   "Unary minus"                                                   "L5" .
-%RIGHT_ASSOC  "^"                                                             "L6" .
-
 (* ======================================================================================================= *)
-<program>		::= <stmtList>                                                                       .
+<program>		::= <stmtList>                                                                                  .
     
-<stmtList>		::= <stmt> ";" <stmtList> | <epsilon>                                                .
+<stmtList>		::= <stmt> ";" <stmtList> | <epsilon>                                                           .
 
-<stmt>			::= <assignStmt> | <decStmt> | <condStmt> | <iterStmt> | <printStmt> | <decoratedId> .
+<stmt>			::= <assignStmt> | <decStmt> | <condStmt> | <iterStmt> | <printStmt> | <decoratedId> | <block>  .
 
-<block>			::= "{"<stmtList>"}".
+<block>			::= "{"<stmtList>"}"                                                                            .
 
-<assignStmt> 		::= <identifier> "=" <expression> 
-                          | <int> <identifier> "=" <expression> 
-                          | <bool> <identifier> "=" <expression>                                                    .
+<assignStmt> 		::= identifier "=" <expression> 
+                          | "int" identifier "=" <expression> 
+                          | "bool" identifier "=" <expression>                                                          .
 
-<decStmt>		::= <int> <identifier> | <bool> <identifier>    .
+<decStmt>		::= "int" identifier | "bool" identifier    .
 
 <condStmt>		::= "if" "("<expression>")" <block> 
-                          | "if" "("<expression>")" <block> "else" <block>                                           .
+                          | "if" "("<expression>")" <block> "else" <block>                                              .
 
-<iterStmt>		::= <whileLoop> | <forLoop>                                                              .
+<iterStmt>		::= <whileLoop> | <forLoop>                                                                     .
 
-<whileLoop>		::= "while" "("<expression>")" <block>                                                     .
+<whileLoop>		::= "while" "("<expression>")" <block>                                                          .
 
-<forLoop>		::= "for" "("<assignStmt> ";" <termination> ";" <decoratedId>")" <block>                   .
+<forLoop>		::= "for" "("<assignStmt> ";" <termination> ";" <decoratedId>")" <block>                        .
 
-<termination>	 	::= <expression>                                                                     .
+<termination>	 	::= <expression>                                                                                .
 
-<printStmt>		::= "print" "("<expression>")"                                                             .
+<printStmt>		::= "print" "("<expression>")" | "print" "("                                                    .
 
-<decoratedId>		::= <identifier> "++"
-			    | <identifier> "--" 
-			    | "++" <identifier>
-			    | "--" <identifier>                                                                .
+<decoratedId>		::= identifier "++"
+			  | identifier "--" 
+			  | "++" identifier
+			  | "--" identifier                                                                             .
 
-<expression> 		::= <logicalExp>                                                                     .
+<expression> 		::= <logicalExp>         .
+
+<logicalExp>            ::= <logicalExp> "or" <logicalTerm>
+                          | <logicalTerm>                                                                               .
 
 <logicalTerm> 		::= <logicalTerm> "and" <relationalExp>
-                          | <relationalExp>                                                                                        .
+                          | <relationalExp>                                                                             .
 
 <relationalExp> 	::= <relationalExp> "==" <arithmeticExp>
-    | <relationalExp> "!=" <arithmeticExp>
-    | <relationalExp> ">" <arithmeticExp>
-    | <relationalExp> "<" <arithmeticExp>
-    | <arithmeticExp>                                                        .
+                          | <relationalExp> "!=" <arithmeticExp>
+                          | <relationalExp> ">" <arithmeticExp>
+                          | <relationalExp> "<" <arithmeticExp>
+                          | <relationalExp> "<=" <arithmeticExp>
+                          | <relationalExp> ">=" <arithmeticExp>
+                          | <arithmeticExp>                                                                             .
 
-<arithmeticExp>	::= <arithmeticExp> "+" <arithmeticTerm>
-                  | <arithmeticExp> "-" <arithmeticTerm>
-                  | <arithmeticTerm>                                                       .
+<arithmeticExp>         ::= <arithmeticExp> "+" <arithmeticTerm>
+                          | <arithmeticExp> "-" <arithmeticTerm>
+                          | <arithmeticTerm>                                                                            .
 
 <arithmeticTerm>	::= <arithmeticTerm> "*" <arithmeticEntry>
                           | <arithmeticTerm> "/" <arithmeticEntry>
                           | <arithmeticTerm> "%" <arithmeticEntry>
-                          | <arithmeticEntry>                                                      .
+                          | <arithmeticEntry>                                                                           .
 
 <arithmeticEntry>	::= "-"<exponentTerm>
-                             | "not" <exponentTerm>
-                             | <exponentTerm>                                           .
+                          | "not" <exponentTerm>
+                          | <exponentTerm>                                                                              .
 
-<exponentTerm>	::= <baseTerm> "^" <exponentTerm>
-			    | <baseTerm>                                                 .
+<exponentTerm>          ::= <baseTerm> "^" <exponentTerm>
+                          | <baseTerm>                                                                                  .
 
 
 
-<baseTerm>      ::= (<expression>)
-                  | abs(<expression>)
-                  | <int>
-                  | <identifier>
-                  | <bool>
-                  | <decoratedId>                                                                   .
-<int>       ::= integer_value                                                                   .
-<bool>       ::= boolean_value                                                                   .
-<identifier>            ::= ident                                                                           .
-<typeId>        ::= "int" | "bool" | "error"                                                        .
+<baseTerm>              ::= "("<expression>")"
+                          | "abs""("<expression>")"
+                          | integer
+                          | identifier
+                          | boolean
+                          | <decoratedId>                                                                               .
 
-(* ======================================================================================================= *)
-<epsilon>   ::= .
+<epsilon>               ::=                                                                                             .
