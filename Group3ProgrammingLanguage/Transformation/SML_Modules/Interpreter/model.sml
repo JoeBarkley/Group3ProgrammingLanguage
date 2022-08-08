@@ -9,9 +9,9 @@ struct
    
    Consult (i.e., open Int and open Bool) the SML structures Int and Bool for functions that can help with 
    this translation. 
-*)
-fun getLeaf( term ) = CONCRETE.leavesToStringRaw term 
 
+fun getLeaf( term ) = CONCRETE.leavesToStringRaw term 
+*)
 
 (* For your typeChecker you may want to have a datatype that defines the types 
   (i.e., integer, boolean and error) in your language. *)
@@ -62,8 +62,8 @@ fun accessStore(loc1,(env,s)) =
         
         fun aux [] = error msg
           | aux ((loc,dv)::s) =
-                if loc1 = loc then dv
-                else aux s;
+            if loc1 = loc then dv
+            else aux s;
     in
         aux s
     end;
@@ -100,6 +100,9 @@ fun updateStore(loc,dv,(env,[])) = (env,[(loc,dv)])
                 (env, aux(loc,dv,s))	
             end;
   
+fun getLoc(t,loc) = loc;
+
+fun getType(t,loc) = t; 
 
 (* =========================================================================================================== *)
 end; (* struct *) 
