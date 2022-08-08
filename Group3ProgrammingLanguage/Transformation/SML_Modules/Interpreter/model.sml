@@ -37,18 +37,42 @@ type store = (loc * denotable_value) list
    incremented. *)
 val initialModel = ( []:env, 0:loc, []:store )
 
+fun getStoreFromModel (env,s) = s;
+fun getEnvFromModel   (env,s) = env;
+
+exception runtime_error;
+
+fun error msg = (print msg; raise runtime_error);
+
+fun accessEnv(id1,(env,s)) =
+    let
+        val msg = "Error: accessEnv " ^ id1 ^ " not found.";
+        
+        fun aux [] = error msg
+          | aux ((id,t,loc)::env) =
+                if id1 = id then (t,loc)
+                else aux env;
+    in
+        aux env
+    end;
+	
+fun updateStore(loc,dv,(env,[])) = (env,[(loc,dv)])
+  | updateStore(loc,dv,(env,s))  = 
+            let
+                fun aux(loc,dv,[]) = [(loc,dv)]
+                  | aux(loc,dv,sElem::s) = 
+                        let
+                                val (loc1,dv1) = sElem
+                                val matchFound = loc1 = loc
+                        in
+                                if matchFound then (loc,dv) :: s
+                                else sElem::aux(loc,dv,s)
+                        end
+            in
+                (env, aux(loc,dv,s))	
+            end;
+  
+
 (* =========================================================================================================== *)
 end; (* struct *) 
 (* =========================================================================================================== *)
-
-
-
-
-
-
-
-
-
-
-
-
