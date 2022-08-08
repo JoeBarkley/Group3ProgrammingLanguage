@@ -55,6 +55,34 @@ fun accessEnv(id1,(env,s)) =
     in
         aux env
     end;
+    
+fun accessStore(loc1,(env,s)) =
+    let
+        val msg = "Error: accessStore " ^ Int.toString loc1 ^ " not found.";
+        
+        fun aux [] = error msg
+          | aux ((loc,dv)::s) =
+                if loc1 = loc then dv
+                else aux s;
+    in
+        aux s
+    end;
+	
+fun updateEnv(id,t,loc,([],s))	= ([(id,t,loc)],s)
+  | updateEnv(id,t,loc,(env,s))	= 
+        let
+            fun aux(id,t,loc,[])            = [(id,t,loc)]
+              | aux(id,t,loc,envElem::env)  =
+                    let
+                        val (id1,t1,loc1) = envElem
+                        val matchFound = id1 = id
+                    in
+                        if matchFound then (id,t,loc) :: env
+                        else envElem::aux(id,t,loc,env)
+                    end
+        in
+            (aux(id,t,loc,env),s)
+        end
 	
 fun updateStore(loc,dv,(env,[])) = (env,[(loc,dv)])
   | updateStore(loc,dv,(env,s))  = 
