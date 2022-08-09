@@ -25,8 +25,8 @@ fun execute [ programTree ] =
         val tree0 = Strategic_Values.getTerm programTree
        
        (* here is where the call to the typeCheck function is made. Two outcomes are possible: (1) return an m, or (2) raise an exception *)       
-       (* val _     = TypeChecker.typeCheck(tree0,Model.initialModel); 
-        val _     = print("\n\n -------------type check passed\n\n"); *)
+        val _     = TypeChecker.typeCheck(tree0,Model.initialModel); 
+        val _     = print("\n\n -------------type check passed\n\n");
 
         (* here is where the call to the semantic function M is made. The result is the model that exists at the end of the computation. *)
         val result = Semantics.M(tree0,Model.initialModel);
