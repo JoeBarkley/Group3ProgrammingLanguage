@@ -44,19 +44,22 @@ exception runtime_error;
 
 fun error msg = (print msg; raise runtime_error);
 
-fun accessEnv(id1,(env,s)) =
+fun length[]        = 0
+  | length (x::xs)  = 1 + length xs;
+
+fun accessEnv(id1,(env,ctr,s)) =
     let
         val msg = "Error: accessEnv " ^ id1 ^ " not found.";
         
         fun aux [] = error msg
           | aux ((id,t,loc)::env) =
-                if id1 = id then (t,loc)
-                else aux env;
+            if id1 = id then (t,loc)
+            else aux env;
     in
         aux env
     end;
     
-fun accessStore(loc1,(env,s)) =
+fun accessStore(loc1,(env,ctr,s)) =
     let
         val msg = "Error: accessStore " ^ Int.toString loc1 ^ " not found.";
         
@@ -68,24 +71,27 @@ fun accessStore(loc1,(env,s)) =
         aux s
     end;
 	
-fun updateEnv(id,t,loc,([],s))	= ([(id,t,loc)],s)
-  | updateEnv(id,t,loc,(env,s))	= 
+fun updateEnv(id,t,([],ctr,s))	= ([(id,t,ctr)],ctr+1,s)
+  | updateEnv(id,t,(env,ctr,s))	= 
         let
-            fun aux(id,t,loc,[])            = [(id,t,loc)]
-              | aux(id,t,loc,envElem::env)  =
+            fun aux(id,t,[])            = [(id,t,ctr)]
+              | aux(id,t,envElem::env)  =
                     let
                         val (id1,t1,loc1) = envElem
                         val matchFound = id1 = id
                     in
-                        if matchFound then (id,t,loc) :: env
-                        else envElem::aux(id,t,loc,env)
+                        if matchFound then (id,t,loc1) :: env
+                        else envElem::aux(id,t,env)
                     end
+			val origLength = length(env)
+			val newEnv = aux(id,t,env)
+			val newLength = length(newEnv)
         in
-            (aux(id,t,loc,env),s)
-        end
+            if newLength > origLength then (newEnv,ctr+1,s) else (newEnv,ctr,s)
+        end ;
 	
-fun updateStore(loc,dv,(env,[])) = (env,[(loc,dv)])
-  | updateStore(loc,dv,(env,s))  = 
+fun updateStore(loc,dv,(env,ctr,[])) = (env,ctr,[(loc,dv)])
+  | updateStore(loc,dv,(env,ctr,s))  = 
             let
                 fun aux(loc,dv,[]) = [(loc,dv)]
                   | aux(loc,dv,sElem::s) = 
@@ -97,7 +103,7 @@ fun updateStore(loc,dv,(env,[])) = (env,[(loc,dv)])
                                 else sElem::aux(loc,dv,s)
                         end
             in
-                (env, aux(loc,dv,s))	
+                (env,ctr,aux(loc,dv,s))	
             end;
   
 fun getLoc(t,loc) = loc;
