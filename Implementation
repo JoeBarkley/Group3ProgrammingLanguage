@@ -373,3 +373,296 @@ E’ (itree(inode("logicalTerm", _),
     ]
 
 ), m) 		          = E’ (relationalExp1, m)
+
+
+E’ (itree(inode("relationalExp", _),
+  [
+    relationalExp1,
+    itree(inode("==", _), []),
+    arithmeticExp1
+
+  ]
+
+
+), m0) =
+	let
+		val (v1, m1) = E’ (relationalExp1, m0)
+		val (v2, m2) = E‘ (arithmeticExp1, m1)
+	in
+		if v1 = v2 then (true, m2)
+		else (false, m2)
+	end
+
+
+  E’ (itree(inode("relationalExp", _),
+  [
+    relationalExp1,
+    itree(inode("!=", _), []),
+    arithmeticExp1
+
+  ]
+
+
+), m0) =
+  	let
+  		val (v1, m1) = E’ (relationalExp1, m0)
+  		val (v2, m2) = E’ (arithmeticExp1, m1)
+  	in
+  		if v1 <> v2 then (true, m2)
+  		else (false, m2)
+  	end
+
+E’ (itree(inode("relationalExp", _),
+  [
+    relationalExp1,
+    itree(inode(">", _), []),
+    arithmeticExp1
+
+  ]
+
+
+), m0) =
+    let
+    	val (v1, m1) = E’ (relationalExp1, m0)
+    	val (v2, m2) = E’ (arithmeticExp1, m1)
+    in
+    	if v1 > v2 then (true, m2)
+    	else (false, m2)
+    end
+
+
+    E’ (itree(inode("relationalExp", _),
+      [
+        relationalExp1,
+        itree(inode("<", _), []),
+        arithmeticExp1
+
+      ]
+
+
+    ), m0) =
+        let
+        	val (v1, m1) = E’ (relationalExp1, m0)
+        	val (v2, m2) = E’ (arithmeticExp1, m1)
+        in
+        	if v1 < v2 then (true, m2)
+        	else (false, m2)
+        end
+
+E’ (itree(inode("relationalExp", _),
+  [
+    arithmeticExp1
+
+  ]
+
+
+), m0) = E’ (arithmeticExp1, m0)
+
+
+
+E’ (itree(inode("arithmeticExp", _),
+  [
+    arithmeticExp1,
+    itree(inode("+", _), []),
+    arithmeticTerm1
+  ]
+), m0) = let
+							val (v1, m1) = E’ (arithmeticExp1, m0)
+							val (v2, m2) = E’ (arithmeticTerm1, m1)
+						    in
+							(v1 + v2, m2)
+						    end
+
+E’ (itree(inode("arithmeticExp", _),
+  [
+    arithmeticExp1,
+    itree(inode("-", _), []),
+    arithmeticTerm1
+  ]
+), m0) =
+let
+        val (v1, m1) = E’ (arithmeticExp1, m0)
+        val (v2, m2) = E’ (arithmeticTerm1, m1)
+in
+        (v1 - v2, m2)
+ end
+
+
+ E’ (itree(inode("arithmeticExp", _),
+  [
+    arithmeticTerm1
+  ]
+)
+    , m) 			= E’ (arithmeticTerm1, m)
+
+E’ (itree(inode("arithmeticTerm", _),
+  [
+    arithmeticTerm1,
+    itree(inode("*", _), []),
+    arithmeticEntry1,
+  ]
+)
+, m0) =
+let
+    	val (v1, m1) = E’ (arithmeticTerm1, m0)
+    	val (v2, m2) = E’ (arithmeticEntry1, m1)
+  in
+    	(v1 * v2, m2)
+  end
+
+
+  E’ (itree(inode("arithmeticTerm", _),
+  [
+    arithmeticTerm1,
+    itree(inode("/", _), []),
+    arithmeticEntry1,
+  ]
+)
+, m0) = let
+  							val (v1, m1) = E’ (arithmeticTerm1, m0)
+  							val (v2, m2) = E’ (arithmeticEntry1, m1)
+  						      in
+  							(v1 div v2, m2)
+  						      end
+
+
+E’ (itree(inode("arithmeticTerm", _),
+  [
+    arithmeticTerm1,
+    itree(inode("%", _), []),
+    arithmeticEntry1,
+  ]
+)
+, m0) =
+    let
+					val (v1, m1) = E’ (arithmeticTerm1, m0)
+          val (v2, m2) = E’ (arithmeticEntry1, m1)
+    in
+        (v1 mod v2, m2)
+    end
+
+
+E’ (itree(inode("arithmeticTerm", _),
+  [
+    arithmeticEntry1
+  ]
+), m) 			     = E’ (arithmeticEntry1, m)
+
+
+E’ (itree(inode("arithmeticEntry", _),
+  [
+    itree(inode("-", _), []),
+    exponentTerm1
+
+  ]
+
+)
+ , m0)	=   let
+					val (v1, m1) 	= E’ (exponentTerm1, m0)
+				     in
+					(~v1, m1)
+				     end
+
+
+E’ (itree(inode("arithmeticEntry", _),
+  [
+    itree(inode("not", _), []),
+    exponentTerm1
+
+  ]
+
+), m0) = let
+  val (v1, m1) = E’ (exponentTerm1, m0)
+      in
+        (not v1, m1)
+      end
+
+
+E’ (itree(inode("arithmeticEntry", _),
+  [
+    exponentTerm1
+
+  ]
+
+)
+, m)     = E’(exponentTerm1, m)
+
+E’ (itree(inode("exponentTerm", _),
+  [
+  baseTerm1,
+  itree(inode("^", _), []),
+  exponentTerm1
+  ]
+
+)
+, m0) = let
+						val (v1, m1) = E’ (exponentTerm1, m0)
+						val (v2, m2) = E’ (baseTerm1, m1)
+					         in
+						(exp(v2, v1), m2)
+					         end
+
+E’ (itree(inode("exponentTerm", _),
+  [
+  baseTerm1,
+
+  ]
+
+)
+, m) = E’ (baseTerm1, m)
+
+
+E’ (itree(inode("baseTerm", _),
+  [
+    itree(inode("(", _), []),
+    expression1,
+    itree(inode(")", _), []),
+  ]
+)
+, m) = E’(expression1, m)
+
+
+E’ (itree(inode("baseTerm", _),
+  [
+    itree(inode("abs", _), []),
+    itree(inode("(", _), []),
+    expression1,
+    itree(inode(")", _), []),
+  ]
+), m0) =
+	let
+		val (v1, m1) = E’ (expression1, m0)
+	in
+		if v1 < 0 then (~v1, m1)
+		else (v1, m1)
+	end
+
+
+E’ (itree(inode("baseTerm", _),
+  [
+    identifier
+  ]
+), m) = 	let
+  val loc 	= getLoc(accessEnv(identifier, m))
+  val v 	= accessStore(loc, m)
+           	in
+  (v, m)
+  end
+
+E’ (itree(inode("baseTerm", _),
+  [
+    integer
+  ]
+), m)   = (integer, m)
+
+E’ (itree(inode("baseTerm", _),
+  [
+    boolean
+  ]
+), m) = (boolean, m)
+
+E’ (itree(inode("baseTerm", _),
+  [
+    decoratedId
+  ]
+), m) = E’ (decoratedId, m)
