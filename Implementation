@@ -366,3 +366,10 @@ E’ (itree(inode("logicalExpr", _),
             if v2 then (true, m2)
             else (false, m2)
           end
+
+E’ (itree(inode("logicalTerm", _),
+    [
+      relationalExpr1
+    ]
+
+), m) 		          = E’ (relationalExp1, m)
