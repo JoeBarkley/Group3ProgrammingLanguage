@@ -63,205 +63,6 @@ open CONCRETE_REPRESENTATION;
             (3) the second child is a semi-colon   
 *)
 
-fun M(  itree(inode("program",_), 
-                [ 
-                    stmt_list
-                ] 
-             ), 
-        m
-    ) = M(stmt_list, m)
-	
-  | M(  itree(inode("stmtList",_),
-        [
-            stmt1,
-            itree(inode(";",_),[]),
-            stmtList1
-        ]
-    ), m0) = let
-                val m1 = M(stmt1,m0)
-            in
-                M(stmtList1,m1)
-            end
-            
-(*semantics for assignStmt of form "identifier = expression"*)
-  | M(  itree(inode("assignStmt",_),
-        [
-            identifier,
-            itree(inode("=",_),[]),
-            expression1
-        ]
-    ), m) = let
-                val (v,m1) = E'(expression1,m0)
-                val loc = getLoc(accessEnv(identifier,m1))
-            in
-                updateStore(loc,v,m1)
-            end
-            
-(*semantics for assignStmt of form "int identifier = expression"*)
-  | M(  itree(inode("assignStmt",_),
-        [
-            itree(inode("int",_),[]),
-            identifier,
-            itree(inode("=",_),[]),
-            expression1
-        ]
-    ), m) = let
-                val m1 = updateEnv(identifier,int,m)
-                val (v,m2) = E'(expression1,m1)
-                val loc = getLoc(accessEnv(identifier,m2))
-            in
-                updateStore(loc,v,m2)
-            end
-            
-(*semantics for assignStmt of form "bool identifier = expression"*)
-  | M(  itree(inode("assignStmt",_),
-        [
-            itree(inode("bool",_),[]),
-            identifier,
-            itree(inode("=",_),[]),
-            expression1
-        ]
-    ), m) = let
-                val m1 = updateEnv(identifier,bool,m)
-                val (v,m2) = E'(expression1,m0)
-                val loc = getLoc(accessEnv(identifier,m2))
-            in
-                updateStore(loc,v,m2)
-            end
-            
-(*semantics for decStmt of form "int identifier"*)
-  | M(  itree(inode("decStmt",_),
-        [
-            itree(inode("int",_),[]),
-            identifier
-        ]
-    ), m) = updateEnv(identifier,int,m)
-    
-(*semantics for decStmt of form "bool identifier"*)
-  | M(  itree(inode("decStmt",_),
-        [
-            itree(inode("bool",_),[]),
-            identifier
-        ]
-    ), m) = updateEnv(identifier,bool,m)
-    
-(*semantics for block*)
-  | M(  itree(inode("block",_),
-        [
-            itree(inode("{",_),[]),
-            stmtList1,
-            itree(inode("}",_),[])
-        ]
-    ), (env0,loc0,s0)) = let
-                            val (env1,loc1,s1) = M(stmtList1,(env0,loc0,s0))
-                         in
-                            (env0,loc1,s1)
-                         end
-                         
-(*semantics for condStmt of form "if (expression) block"*)
-  | M(  itree(inode("condStmt",_),
-        [
-            itree(inode("if",_),[]),
-            itree(inode("(",_),[]),
-            expression1,
-            itree(inode(")",_),[]),
-            block1
-        ]
-    ), m0) = let
-                val (v,m1) = E'(expression1,m0)
-             in
-                if v then M(block1,m1)
-                else m1
-             end
-             
-(*semantics for condStmt of form "if (expression) block else block"*)
-  | M(  itree(inode("condStmt",_),
-        [
-            itree(inode("if",_),[]),
-            itree(inode("(",_),[]),
-            expression1,
-            itree(inode(")",_),[]),
-            block1,
-            itree(inode("else",_),[]),
-            block2
-        ]
-    ), m0) = let
-                val (v,m1) = E'(expression1,m0)
-             in
-                if v then M(block1,m1)
-                else M(block2,m1)
-             end
-             
-(*semantics for while loop*)
-  | M(  itree(inode("whileLoop",_),
-        [
-            itree(inode("while",_),[]),
-            itree(inode("(",_),[]),
-            expression1,
-            itree(inode(")",_),[]),
-            itree(inode("{",_),[]),
-            block1,
-            itree(inode("}",_),[])
-        ]
-    ), m0) = let
-                val (v,m1) = E'(expression1,m0)
-             in
-                if v then
-                    let
-                        val m2 = M(block1,m1)
-                    in
-                        M(  itree(inode("whileLoop",_),
-                            [
-                                itree(inode("while",_),[]),
-                                itree(inode("(",_),[]),
-                                expression1,
-                                itree(inode(")",_),[]),
-                                itree(inode("{",_),[]),
-                                block1,
-                                itree(inode("}",_),[])
-                            ]
-                        ), m2)
-                    end
-                else m1
-             end
-             
-(*semantics for for loop*)
-  | M(  itree(inode("forLoop",_),
-        [
-            itree(inode("for",_),[]),
-            itree(inode("(",_),[]),
-            assignStmt1,
-            itree(inode(";",_),[]),
-            termination1,
-            itree(inode(";",_),[]),
-            decoratedId1,
-            itree(inode(")",_),[]),
-            block1
-        ]
-    ), m0) = let
-                val m1 = M(assignStmt1,m0)
-             in
-                N(termination1,decoratedId1,block1,m1)
-             end
-             
-(*semantics for print statement*)
-  | M(  itree(inode("printStmt",_),
-        [
-            itree(inode("print",_),[]),
-            itree(inode("(",_),[]),
-            expression1,
-            itree(inode(")",_),[])
-        ]
-    ), m0 = let
-                val (v,m1) = E'(expression1,m0)
-            in
-                m1
-            end
-
-  | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
-  
-  | M _ = raise Fail("error in Semantics.M - this should never occur");
-  
 (*evaluation for termination*)
 fun E'( itree(inode("termination",_),
         [
@@ -273,10 +74,10 @@ fun E'( itree(inode("termination",_),
 |   E'( itree(inode("decoratedId",_),
         [
             itree(inode("++",_),[]),
-            identifier
+            itree(inode(identifier,_),[])
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(identifier,m0)
+                val loc = getLoc(accessEnv(identifier,m0))
                 val v1 = accessStore(loc,m0)
                 val v2 = (v1+1)
                 val m1 = updateStore(loc,v2,m0)
@@ -288,10 +89,10 @@ fun E'( itree(inode("termination",_),
 |   E'( itree(inode("decoratedId",_),
         [
             itree(inode("--",_),[]),
-            identifier
+            itree(inode(identifier,_),[])
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(identifier,m0)
+                val loc = getLoc(accessEnv(identifier,m0))
                 val v1 = accessStore(loc,m0)
                 val v2 = (v1-1)
                 val m1 = updateStore(loc,v2,m0)
@@ -302,11 +103,11 @@ fun E'( itree(inode("termination",_),
 (*evaluation for decorated id of form "decoratedId++"*)
 |   E'( itree(inode("decoratedId",_),
         [
-            identifier,
+            itree(inode(identifier,_),[]),
             itree(inode("++",_),[])
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(identifier,m0)
+                val loc = getLoc(accessEnv(identifier,m0))
                 val v1 = accessStore(loc,m0)
                 val v2 = (v1+1)
                 val m1 = updateStore(loc,v2,m0)
@@ -317,11 +118,11 @@ fun E'( itree(inode("termination",_),
 (*evaluation for decorated id of form "decoratedId++"*)
 |   E'( itree(inode("decoratedId",_),
         [
-            identifier,
+            itree(inode(identifier,_),[]),
             itree(inode("--",_),[])
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(identifier,m0)
+                val loc = getLoc(accessEnv(identifier,m0))
                 val v1 = accessStore(loc,m0)
                 val v2 = (v1-1)
                 val m1 = updateStore(loc,v2,m0)
@@ -459,7 +260,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(arithmeticExp1,m0)
                 val (v2,m2) = E'(arithmeticTerm1,m1)
              in
-                ((v1+v2),m2)
+                ((v1 + v2),m2)
              end
              
 (*evaluation for arithmetic expression of form "arithmeticExp - arithmeticTerm"*)
@@ -473,7 +274,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(arithmeticExp1,m0)
                 val (v2,m2) = E'(arithmeticTerm1,m1)
              in
-                ((v1-v2),m2)
+                ((v1 - v2),m2)
              end
              
 (*evaluation for arithmetic expression of form "arithmeticTerm"*)
@@ -574,7 +375,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(exponentTerm1,m0)
                 val (v2,m2) = E'(baseTerm1,m1)
              in
-                (exp(v2,v1),m2)
+                (Math.exp(v2,v1),m2)
              end
              
 (*evaluation for exponent term of form "baseTerm"*)
@@ -611,7 +412,7 @@ fun E'( itree(inode("termination",_),
 (*evaluation for base term of form "identifier"*)
 |   E'( itree(inode("baseTerm",_),
         [
-            identifier
+            itree(inode(identifier,_),[])
         ]
     ), m) = let
                 val loc = getLoc(accessEnv(identifier,m))
@@ -623,14 +424,14 @@ fun E'( itree(inode("termination",_),
 (*evaluation for base term of form "integer"*)
 |   E'( itree(inode("baseTerm",_),
         [
-            integer
+            itree(inode(integer,_),[])
         ]
     ), m) = (integer,m)
     
 (*evaluation for base term of form "boolean"*)
 |   E'( itree(inode("baseTerm",_),
         [
-            boolean
+            itree(inode(boolean,_),[])
         ]
     ), m) = (boolean,m)
     
@@ -639,10 +440,10 @@ fun E'( itree(inode("termination",_),
         [
             decoratedId
         ]
-    ), m) = E'(decoratedId,m);
+    ), m) = E'(decoratedId,m)
 
 (*helper function for for loop*)
-fun N(termination1,decoratedId1,block1,m0) =
+and N(termination1,decoratedId1,block1,m0) =
     let
         val (v1,m1) = E'(termination1,m0)
     in
@@ -654,7 +455,186 @@ fun N(termination1,decoratedId1,block1,m0) =
                 N(termination1,decoratedId1,block1,m3)
             end
         else m1
-    end;
+    end
+
+and M(  itree(inode("program",_), 
+                [ 
+                    stmt_list
+                ] 
+             ), 
+        m
+    ) = M(stmt_list, m)
+	
+  | M(  itree(inode("stmtList",_),
+        [
+            stmt1,
+            itree(inode(";",_),[]),
+            stmtList1
+        ]
+    ), m0) = let
+                val m1 = M(stmt1,m0)
+            in
+                M(stmtList1,m1)
+            end
+            
+(*semantics for assignStmt of form "identifier = expression"*)
+  | M(  itree(inode("assignStmt",_),
+        [
+            itree(inode(identifier,_),[]),
+            itree(inode("=",_),[]),
+            expression1
+        ]
+    ), m0) = let
+                val (v,m1) = E'(expression1,m0)
+                val loc = getLoc(accessEnv(identifier,m1))
+            in
+                updateStore(loc,v,m1)
+            end
+            
+(*semantics for assignStmt of form "int identifier = expression"*)
+  | M(  itree(inode("assignStmt",_),
+        [
+            itree(inode("int",_),[]),
+            itree(inode(identifier,_),[]),
+            itree(inode("=",_),[]),
+            expression1
+        ]
+    ), m) = let
+                val m1 = updateEnv(identifier,INT,m)
+                val (v,m2) = E'(expression1,m1)
+                val loc = getLoc(accessEnv(identifier,m2))
+            in
+                updateStore(loc,v,m2)
+            end
+            
+(*semantics for assignStmt of form "bool identifier = expression"*)
+  | M(  itree(inode("assignStmt",_),
+        [
+            itree(inode("bool",_),[]),
+            itree(inode(identifier,_),[]),
+            itree(inode("=",_),[]),
+            expression1
+        ]
+    ), m0) = let
+                val m1 = updateEnv(identifier,BOOL,m0)
+                val (v,m2) = E'(expression1,m0)
+                val loc = getLoc(accessEnv(identifier,m2))
+            in
+                updateStore(loc,v,m2)
+            end
+            
+(*semantics for decStmt of form "int identifier"*)
+  | M(  itree(inode("decStmt",_),
+        [
+            itree(inode("int",_),[]),
+            itree(inode(identifier,_),[])
+        ]
+    ), m) = updateEnv(identifier,INT,m)
+    
+(*semantics for decStmt of form "bool identifier"*)
+  | M(  itree(inode("decStmt",_),
+        [
+            itree(inode("bool",_),[]),
+            itree(inode(identifier,_),[])
+        ]
+    ), m) = updateEnv(identifier,bool,m)
+    
+(*semantics for block*)
+  | M(  itree(inode("block",_),
+        [
+            itree(inode("{",_),[]),
+            stmtList1,
+            itree(inode("}",_),[])
+        ]
+    ), (env0,loc0,s0)) = let
+                            val (env1,loc1,s1) = M(stmtList1,(env0,loc0,s0))
+                         in
+                            (env0,loc1,s1)
+                         end
+                         
+(*semantics for condStmt of form "if (expression) block"*)
+  | M(  itree(inode("condStmt",_),
+        [
+            itree(inode("if",_),[]),
+            itree(inode("(",_),[]),
+            expression1,
+            itree(inode(")",_),[]),
+            block1
+        ]
+    ), m0) = let
+                val (v,m1) = E'(expression1,m0)
+             in
+                if v then M(block1,m1)
+                else m1
+             end
+             
+(*semantics for condStmt of form "if (expression) block else block"*)
+  | M(  itree(inode("condStmt",_),
+        [
+            itree(inode("if",_),[]),
+            itree(inode("(",_),[]),
+            expression1,
+            itree(inode(")",_),[]),
+            block1,
+            itree(inode("else",_),[]),
+            block2
+        ]
+    ), m0) = let
+                val (v,m1) = E'(expression1,m0)
+             in
+                if v then M(block1,m1)
+                else M(block2,m1)
+             end
+             
+(*semantics for while loop*)
+  | M(  itree(inode("whileLoop",_),
+        [
+            itree(inode("while",_),[]),
+            itree(inode("(",_),[]),
+            expression1,
+            itree(inode(")",_),[]),
+            itree(inode("{",_),[]),
+            block1,
+            itree(inode("}",_),[])
+        ]
+    ), m0) = m0
+             
+(*semantics for for loop*)
+  | M(  itree(inode("forLoop",_),
+        [
+            itree(inode("for",_),[]),
+            itree(inode("(",_),[]),
+            assignStmt1,
+            itree(inode(";",_),[]),
+            termination1,
+            itree(inode(";",_),[]),
+            decoratedId1,
+            itree(inode(")",_),[]),
+            block1
+        ]
+    ), m0) = let
+                val m1 = M(assignStmt1,m0)
+             in
+                N(termination1,decoratedId1,block1,m1)
+             end
+             
+(*semantics for print statement*)
+  | M(  itree(inode("printStmt",_),
+        [
+            itree(inode("print",_),[]),
+            itree(inode("(",_),[]),
+            expression1,
+            itree(inode(")",_),[])
+        ]
+    ), m0) = let
+                val (v,m1) = E'(expression1,m0)
+            in
+                m1
+            end
+
+  | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
+  
+  | M _ = raise Fail("error in Semantics.M - this should never occur");
 
 (* =========================================================================================================== *)
 end (* struct *)
