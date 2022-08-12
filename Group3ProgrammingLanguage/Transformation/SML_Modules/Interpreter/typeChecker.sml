@@ -13,7 +13,7 @@ open CONCRETE_REPRESENTATION;
 *)
 
 
-fun typeCheck( itree(inode("prog",_),
+fun typeCheck( itree(inode("program",_),
 	[ 
 		stmt_list
 	] 
@@ -215,10 +215,13 @@ fun typeCheck( itree(inode("prog",_),
             else raise Fail("Decorated ID \" ^ decoratedId1 ^ "\" not of type integer")
         end
         
+| typeCheck( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn typeCheck root = " ^ x_root ^ "\n\n")
+| typeCheck _ = raise Fail("Error in Model.typeCheck - this should never occur");
+        
 (*typeOf for termination*)
-|   typeOf( itree(inode("termination", _),
+fun typeOf( itree(inode("termination", _),
     [
-        expression1,
+        expression1
     ]
 ), m) = let
             val t1 = typeOf(expression1, m)
@@ -338,7 +341,7 @@ fun typeCheck( itree(inode("prog",_),
             val t1 = typeOf(relationalExp1,m)
             val t2 = typeOf(arithmeticExp1,m)
         in
-            if t1 = t2 and t1 <> ERROR then BOOL
+            if t1 = t2 andalso t1 <> ERROR then BOOL
             else ERROR
         end
 
@@ -353,7 +356,7 @@ fun typeCheck( itree(inode("prog",_),
             val t1 = typeOf(relationalExp1,m)
             val t2 = typeOf(arithmeticExp1,m)
         in
-            if t1 = t2 and t1 <> ERROR then BOOL
+            if t1 = t2 andalso t1 <> ERROR then BOOL
             else ERROR
         end
 
@@ -368,7 +371,7 @@ fun typeCheck( itree(inode("prog",_),
             val t1 = typeOf(relationalExp1,m)
             val t2 = typeOf(arithmeticExp1,m)
         in
-            if t1 = t2 and t1 <> ERROR then BOOL
+            if t1 = t2 andalso t1 <> ERROR then BOOL
             else ERROR
         end
         
@@ -383,7 +386,7 @@ fun typeCheck( itree(inode("prog",_),
             val t1 = typeOf(relationalExp1,m)
             val t2 = typeOf(arithmeticExp1,m)
         in
-            if t1 = t2 and t1 <> ERROR then BOOL
+            if t1 = t2 andalso t1 <> ERROR then BOOL
             else ERROR
         end
 
@@ -545,7 +548,7 @@ fun typeCheck( itree(inode("prog",_),
         expression1,
         itree(inode(")",_),[])
     ]
-), m = typeOf(expression1,m)
+), m) = typeOf(expression1,m)
 
 (*typeOf for base term of form "abs(expression)"*)
 |   typeOf( itree(inode("baseTerm",_),
@@ -572,14 +575,14 @@ fun typeCheck( itree(inode("prog",_),
 (*typeOf for base term of form "integer"*)
 |   typeOf( itree(inode("baseTerm",_),
     [
-        itree(inode("int",_),[])
+        itree(inode("integer",_),[])
     ]
 ), m) = INT
 
 (*typeOf for base term of form "boolean"*)
 |   typeOf( itree(inode("baseTerm",_),
     [
-        itree(inode("bool",_),[])
+        itree(inode("boolean",_),[])
     ]
 ), m) = BOOL
 
@@ -591,7 +594,7 @@ fun typeCheck( itree(inode("prog",_),
                 itree(inode("++",_),[]),
                 decoratedId1
             ]
-        ), m)
+        )
     ]
 ), m) = typeOf(decoratedId1,m)
 
@@ -603,7 +606,7 @@ fun typeCheck( itree(inode("prog",_),
                 itree(inode("--",_),[]),
                 decoratedId1
             ]
-        ), m)
+        )
     ]
 ), m) = typeOf(decoratedId1,m)
 
@@ -615,7 +618,7 @@ fun typeCheck( itree(inode("prog",_),
                 decoratedId1,
                 itree(inode("++",_),[])
             ]
-        ), m)
+        )
     ]
 ), m) = typeOf(decoratedId1,m)
 
@@ -627,18 +630,18 @@ fun typeCheck( itree(inode("prog",_),
                 decoratedId1,
                 itree(inode("--",_),[])
             ]
-        ), m)
+        )
     ]
 ), m) = typeOf(decoratedId1,m)
 
-  | typeCheck( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn typeCheck root = " ^ x_root ^ "\n\n")
-  | typeCheck _ = raise Fail("Error in Model.typeCheck - this should never occur")
+  | typeOf( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn typeCheck root = " ^ x_root ^ "\n\n")
+  | typeOf _ = raise Fail("Error in Model.typeCheck - this should never occur")
 
 
 (* =========================================================================================================== *)  
 end (* struct *)
 (* =========================================================================================================== *)
-(*so github would let me update my commit description*)
+
 
 
 
