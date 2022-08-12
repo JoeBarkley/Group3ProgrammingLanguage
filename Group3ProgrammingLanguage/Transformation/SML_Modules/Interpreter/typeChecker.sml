@@ -336,13 +336,300 @@ fun typeCheck( itree(inode("prog",_),
     ]
 ), m) = let
             val t1 = typeOf(relationalExp1,m)
-            val t2 = typeOf(arithmeticExp1, m)
+            val t2 = typeOf(arithmeticExp1,m)
         in
             if t1 = t2 and t1 <> ERROR then BOOL
             else ERROR
         end
 
-(*typeOf for relational expression of form "
+(*typeOf for relational expression of form "relationalExp != arithmeticExp"*)
+|   typeOf( itree(inode("relationalExp",_),
+    [
+        relationalExp1,
+        itree(inode("!=",_),[]),
+        arithmeticExp1
+    ]
+), m) = let
+            val t1 = typeOf(relationalExp1,m)
+            val t2 = typeOf(arithmeticExp1,m)
+        in
+            if t1 = t2 and t1 <> ERROR then BOOL
+            else ERROR
+        end
+
+(*typeOf for relational expression of form "relationalExp > arithmeticExp"*)
+|   typeOf( itree(inode("relationalExp",_),
+    [
+        relationalExp1,
+        itree(inode(">",_),[]),
+        arithmeticExp1
+    ]
+), m) = let
+            val t1 = typeOf(relationalExp1,m)
+            val t2 = typeOf(arithmeticExp1,m)
+        in
+            if t1 = t2 and t1 <> ERROR then BOOL
+            else ERROR
+        end
+        
+(*typeOf for relational expression of form "relationalExp < arithmeticExp"*)
+|   typeOf( itree(inode("relationalExp",_),
+    [
+        relationalExp1,
+        itree(inode("<",_),[]),
+        arithmeticExp1
+    ]
+), m) = let
+            val t1 = typeOf(relationalExp1,m)
+            val t2 = typeOf(arithmeticExp1,m)
+        in
+            if t1 = t2 and t1 <> ERROR then BOOL
+            else ERROR
+        end
+
+(*typeOf for relational expression of form "arithmeticExp"*)
+|   typeOf( itree(inode("relationalExp",_),
+    [
+        arithmeticExp1
+    ]
+), m) = typeOf(arithmeticExp1,m)
+
+(*typeOf for arithmetic expression of form "arithmeticExp + arithmeticTerm"*)
+|   typeOf( itree(inode("arithmeticExp",_),
+    [
+        arithmeticExp1,
+        itree(inode("+",_),[]),
+        arithmeticTerm1
+    ]
+), m) = let
+            val t1 = typeOf(arithmeticExp1,m)
+            val t2 = typeOf(arithmeticTerm1,m)
+        in
+            if t1 = t2 andalso t1 = INT then INT
+            else ERROR
+        end
+        
+(*typeOf for arithmetic expression of form "arithmeticExp - arithmeticTerm"*)
+|   typeOf( itree(inode("arithmeticExp",_),
+    [
+        arithmeticExp1,
+        itree(inode("-",_),[]),
+        arithmeticTerm1
+    ]
+), m) = let
+            val t1 = typeOf(arithmeticExp1,m)
+            val t2 = typeOf(arithmeticTerm1,m)
+        in
+            if t1 = t2 andalso t1 = INT then INT
+            else ERROR
+        end
+        
+(*typeOf for arithmetic expression of form "arithmeticTerm"*)
+|   typeOf( itree(inode("arithmeticExp",_),
+    [
+        arithmeticTerm1
+    ]
+), m) = typeOf(arithmeticTerm1,m)
+
+(*typeOf for arithmetic term of form "arithmeticTerm * arithmeticEntry"*)
+|   typeOf( itree(inode("arithmeticTerm",_),
+    [
+        arithmeticTerm1,
+        itree(inode("*",_),[]),
+        arithmeticEntry1
+    ]
+), m) = let
+            val t1 = typeOf(arithmeticTerm1,m)
+            val t2 = typeOf(arithmeticEntry1,m)
+        in
+            if t1 = t2 andalso t1 = INT then INT
+            else ERROR
+        end
+        
+(*typeOf for arithmetic term of form "arithmeticTerm / arithmeticEntry"*)
+|   typeOf( itree(inode("arithmeticTerm",_),
+    [
+        arithmeticTerm1,
+        itree(inode("/",_),[]),
+        arithmeticEntry1
+    ]
+), m) = let
+            val t1 = typeOf(arithmeticTerm1,m)
+            val t2 = typeOf(arithmeticEntry1,m)
+        in
+            if t1 = t2 andalso t1 = INT then INT
+            else ERROR
+        end
+        
+(*typeOf for arithmetic term of form "arithmeticTerm % arithmeticEntry"*)
+|   typeOf( itree(inode("arithmeticTerm",_),
+    [
+        arithmeticTerm1,
+        itree(inode("%",_),[]),
+        arithmeticEntry1
+    ]
+), m) = let
+            val t1 = typeOf(arithmeticTerm1,m)
+            val t2 = typeOf(arithmeticEntry1,m)
+        in
+            if t1 = t2 andalso t1 = INT then INT
+            else ERROR
+        end
+
+(*typeOf for arithmetic term of form "arithmeticEntry"*)
+|   typeOf( itree(inode("arithmeticTerm",_),
+    [
+        arithmeticEntry1
+    ]
+), m) = typeOf(arithmeticEntry1,m)
+
+(*typeOf for arithmetic entry of form "-exponentTerm"*)
+|   typeOf( itree(inode("arithmeticEntry",_),
+    [
+        itree(inode("-",_),[]),
+        exponentTerm1
+    ]
+), m) = let
+            val t1 = typeOf(exponentTerm1,m)
+        in
+            if t1 = INT then INT
+            else ERROR
+        end
+        
+(*typeOf for arithmetic entry of form "not exponentTerm"*)
+|   typeOf( itree(inode("arithmeticEntry",_),
+    [
+        itree(inode("not",_),[]),
+        exponentTerm1
+    ]
+), m) = let
+            val t1 = typeOf(exponentTerm1,m)
+        in
+            if t1 = BOOL then BOOL
+            else ERROR
+        end
+        
+(*typeOf for arithmetic entry of form "exponentTerm"*)
+|   typeOf( itree(inode("arithmeticEntry",_),
+    [
+        exponentTerm1
+    ]
+), m) = typeOf(exponentTerm1,m)
+
+(*typeOf for exponent term of form "baseTerm ^ exponentTerm"*)
+|   typeOf( itree(inode("exponentTerm",_),
+    [
+        baseTerm1,
+        itree(inode("^",_),[]),
+        exponentTerm1
+    ]
+), m) = let
+            val t1 = typeOf(baseTerm1,m)
+            val t2 = typeOf(exponentTerm1,m)
+        in
+            if t1 = t2 andalso t1 = INT then INT
+            else ERROR
+        end
+        
+(*typeOf for exponent term of form "baseTerm"*)
+|   typeOf( itree(inode("exponentTerm",_),
+    [
+        baseTerm1
+    ]
+), m) = typeOf(baseTerm1,m)
+
+(*typeOf for base term of form "(expression)"*)
+|   typeOf( itree(inode("baseTerm",_),
+    [
+        itree(inode("(",_),[]),
+        expression1,
+        itree(inode(")",_),[])
+    ]
+), m = typeOf(expression1,m)
+
+(*typeOf for base term of form "abs(expression)"*)
+|   typeOf( itree(inode("baseTerm",_),
+    [
+        itree(inode("abs",_),[]),
+        itree(inode("(",_),[]),
+        expression1,
+        itree(inode(")",_),[])
+    ]
+), m) = let
+            val t1 = typeOf(expression1,m)
+        in
+            if t1 = INT then INT
+            else ERROR
+        end
+        
+(*typeOf for base term of form "identifier"*)
+|   typeOf( itree(inode("baseTerm",_),
+    [
+        identifier
+    ]
+), m) = getType(accessEnv(identifier,m))
+
+(*typeOf for base term of form "integer"*)
+|   typeOf( itree(inode("baseTerm",_),
+    [
+        itree(inode("int",_),[])
+    ]
+), m) = INT
+
+(*typeOf for base term of form "boolean"*)
+|   typeOf( itree(inode("baseTerm",_),
+    [
+        itree(inode("bool",_),[])
+    ]
+), m) = BOOL
+
+(*typeOf for base term of form "++decoratedId"*)
+|   typeOf( itree(inode("baseTerm",_),
+    [
+        itree(inode("decoratedId",_),
+            [
+                itree(inode("++",_),[]),
+                decoratedId1
+            ]
+        ), m)
+    ]
+), m) = typeOf(decoratedId1,m)
+
+(*typeOf for base term of form "--decoratedId"*)
+|   typeOf( itree(inode("baseTerm",_),
+    [
+        itree(inode("decoratedId",_),
+            [
+                itree(inode("--",_),[]),
+                decoratedId1
+            ]
+        ), m)
+    ]
+), m) = typeOf(decoratedId1,m)
+
+(*typeOf for base term of form "decoratedId++"*)
+|   typeOf( itree(inode("baseTerm",_),
+    [
+        itree(inode("decoratedId",_),
+            [
+                decoratedId1,
+                itree(inode("++",_),[])
+            ]
+        ), m)
+    ]
+), m) = typeOf(decoratedId1,m)
+
+(*typeOf for base term of form "decoratedId--"*)
+|   typeOf( itree(inode("baseTerm",_),
+    [
+        itree(inode("decoratedId",_),
+            [
+                decoratedId1,
+                itree(inode("--",_),[])
+            ]
+        ), m)
+    ]
+), m) = typeOf(decoratedId1,m)
 
   | typeCheck( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn typeCheck root = " ^ x_root ^ "\n\n")
   | typeCheck _ = raise Fail("Error in Model.typeCheck - this should never occur")
