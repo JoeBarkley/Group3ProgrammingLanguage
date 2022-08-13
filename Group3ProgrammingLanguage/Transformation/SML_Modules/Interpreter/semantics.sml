@@ -74,12 +74,12 @@ fun E'( itree(inode("termination",_),
 |   E'( itree(inode("decoratedId",_),
         [
             itree(inode("++",_),[]),
-            itree(inode(identifier,_),[])
+            identifier
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(identifier,m0))
+                val loc = getLoc(accessEnv(getLeaf(identifier),m0))
                 val v1 = accessStore(loc,m0)
-                val v2 = (v1+1)
+                val v2 = (v1 + 1)
                 val m1 = updateStore(loc,v2,m0)
              in
                 (v2,m1)
@@ -89,12 +89,12 @@ fun E'( itree(inode("termination",_),
 |   E'( itree(inode("decoratedId",_),
         [
             itree(inode("--",_),[]),
-            itree(inode(identifier,_),[])
+            identifier
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(identifier,m0))
+                val loc = getLoc(accessEnv(getLeaf(identifier),m0))
                 val v1 = accessStore(loc,m0)
-                val v2 = (v1-1)
+                val v2 = (v1 - 1)
                 val m1 = updateStore(loc,v2,m0)
              in
                 (v2,m1)
@@ -103,13 +103,13 @@ fun E'( itree(inode("termination",_),
 (*evaluation for decorated id of form "decoratedId++"*)
 |   E'( itree(inode("decoratedId",_),
         [
-            itree(inode(identifier,_),[]),
+            identifier,
             itree(inode("++",_),[])
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(identifier,m0))
+                val loc = getLoc(accessEnv(getLeaf(identifier),m0))
                 val v1 = accessStore(loc,m0)
-                val v2 = (v1+1)
+                val v2 = (v1 + 1)
                 val m1 = updateStore(loc,v2,m0)
              in
                 (v1,m1)
@@ -118,16 +118,16 @@ fun E'( itree(inode("termination",_),
 (*evaluation for decorated id of form "decoratedId++"*)
 |   E'( itree(inode("decoratedId",_),
         [
-            itree(inode(identifier,_),[]),
+            identifier,
             itree(inode("--",_),[])
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(identifier,m0))
+                val loc = getLoc(accessEnv(getLeaf(identifier),m0))
                 val v1 = accessStore(loc,m0)
-                val v2 = (v1-1)
-                val m1 = updateStore(loc,v2,m0)
+                val v2 = (v1 - 1)
+                (*val m1 = updateStore(loc,v2,m0)*)
              in
-                (v1,m1)
+                (v1,updateStore(loc,v2,m0))
              end
              
 (*evaluation for generic expression*)
@@ -148,8 +148,8 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(logicalExp1,m0)
                 val (v2,m2) = E'(logicalTerm1,m1)
              in
-                if v1 then (true,m2)
-                else if v2 then (true,m2)
+                if Bool.fromString(v1) then (true,m2)
+                else if Bool.fromString(v2) then (true,m2)
                 else (false,m2)
              end
   
@@ -171,7 +171,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(logicalTerm1,m0)
                 val (v2,m2) = E'(relationalExp1,m1)
              in
-                if v1 andalso v2 then (true,m2)
+                if Bool.fromString(v1) andalso Bool.fromString(v2) then (true,m2)
                 else (false,m2)
              end
 
@@ -193,7 +193,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(relationalExp1,m0)
                 val (v2,m2) = E'(arithmeticExp1,m1)
              in
-                if v1 = v2 then (true,m2)
+                if Int.fromString(v1) = Int.fromString(v2) then (true,m2)
                 else (false,m2)
              end
              
@@ -208,7 +208,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(relationalExp1,m0)
                 val (v2,m2) = E'(arithmeticExp1,m1)
              in
-                if v1 <> v2 then (true,m2)
+                if Int.fromString(v1) <> Int.fromString(v2) then (true,m2)
                 else (false,m2)
              end
              
@@ -223,7 +223,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(relationalExp1,m0)
                 val (v2,m2) = E'(arithmeticExp1,m1)
              in
-                if v1 > v2 then (true,m2)
+                if Int.fromString(v1) > Int.fromString(v2) then (true,m2)
                 else (false,m2)
              end
              
@@ -238,7 +238,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(relationalExp1,m0)
                 val (v2,m2) = E'(arithmeticExp1,m1)
              in
-                if v1 < v2 then (true,m2)
+                if Int.fromString(v1) < Int.fromString(v2) then (true,m2)
                 else (false,m2)
              end
              
@@ -260,7 +260,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(arithmeticExp1,m0)
                 val (v2,m2) = E'(arithmeticTerm1,m1)
              in
-                ((v1 + v2),m2)
+                ((Int.fromString(v1) + Int.fromString(v2)),m2)
              end
              
 (*evaluation for arithmetic expression of form "arithmeticExp - arithmeticTerm"*)
@@ -274,7 +274,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(arithmeticExp1,m0)
                 val (v2,m2) = E'(arithmeticTerm1,m1)
              in
-                ((v1 - v2),m2)
+                ((Int.fromString(v1) - Int.fromString(v2)),m2)
              end
              
 (*evaluation for arithmetic expression of form "arithmeticTerm"*)
@@ -295,7 +295,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(arithmeticTerm1,m0)
                 val (v2,m2) = E'(arithmeticEntry1,m1)
              in
-                ((v1*v2),m2)
+                ((Int.fromString(v1) * Int.fromString(v2)),m2)
              end
             
 (*evaluation for arithmetic term of form "arithmeticTerm / arithmeticEntry"*)
@@ -309,7 +309,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(arithmeticTerm1,m0)
                 val (v2,m2) = E'(arithmeticEntry1,m1)
              in
-                ((v1 div v2),m2)
+                ((Int.fromString(v1) div Int.fromString(v2)),m2)
              end
 
 (*evaluation for arithmetic term of form "arithmeticTerm % arithmeticEntry"*)
@@ -323,7 +323,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(arithmeticTerm1,m0)
                 val (v2,m2) = E'(arithmeticEntry1,m1)
              in
-                ((v1 mod v2),m2)
+                ((Int.fromString(v1) mod Int.fromString(v2)),m2)
              end
              
 (*evaluation for arithmetic term of form "arithmeticEntry"*)
@@ -342,7 +342,7 @@ fun E'( itree(inode("termination",_),
     ), m0) = let
                 val (v1,m1) = E'(exponentTerm1,m0)
              in
-                (~v1,m1)
+                (~Int.fromString(v1),m1)
              end
              
 (*evaluation for arithmetic entry of form "not exponentTerm"*)
@@ -354,7 +354,7 @@ fun E'( itree(inode("termination",_),
     ), m0) = let
                 val (v1,m1) = E'(exponentTerm1,m0)
              in
-                (not v1,m1)
+                (not Bool.fromString(v1),m1)
              end
              
 (*evaluation for arithmetic entry of form "exponentTerm"*)
@@ -375,7 +375,7 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(exponentTerm1,m0)
                 val (v2,m2) = E'(baseTerm1,m1)
              in
-                (Math.exp(v2,v1),m2)
+                (Math.exp(Int.fromString(v2),Int.fromString(v1)),m2)
              end
              
 (*evaluation for exponent term of form "baseTerm"*)
@@ -405,17 +405,17 @@ fun E'( itree(inode("termination",_),
     ), m0) = let
                 val (v1,m1) = E'(expression1,m0)
              in
-                if v1 < 0 then (~v1,m1)
-                else (v1,m1)
+                if Int.fromString(v1) < 0 then (~Int.fromString(v1),m1)
+                else (Int.fromString(v1),m1)
              end
              
 (*evaluation for base term of form "identifier"*)
 |   E'( itree(inode("baseTerm",_),
         [
-            itree(inode(identifier,_),[])
+            identifier
         ]
     ), m) = let
-                val loc = getLoc(accessEnv(identifier,m))
+                val loc = getLoc(accessEnv(getLeaf(identifier),m))
                 val v = accessStore(loc,m)
             in
                 (v,m)
@@ -424,16 +424,16 @@ fun E'( itree(inode("termination",_),
 (*evaluation for base term of form "integer"*)
 |   E'( itree(inode("baseTerm",_),
         [
-            itree(inode(integer,_),[])
+            integer
         ]
-    ), m) = (integer,m)
+    ), m) = (getLeaf(integer),m)
     
 (*evaluation for base term of form "boolean"*)
 |   E'( itree(inode("baseTerm",_),
         [
-            itree(inode(boolean,_),[])
+            boolean
         ]
-    ), m) = (boolean,m)
+    ), m) = (getLeaf(boolean),m)
     
 (*evaluation for base term of form "decoratedId"*)
 |   E'( itree(inode("baseTerm",_),
@@ -447,9 +447,9 @@ and N(termination1,decoratedId1,block1,m0) =
     let
         val (v1,m1) = E'(termination1,m0)
     in
-        if v1 then
+        if Bool.fromString(v1) = true then
             let
-                val (v2,m2) = E'(decoratedId1,m1)
+                val (Bool.fromString(v2),m2) = E'(decoratedId1,m1)
                 val m3 = M(block1,m2)
             in
                 N(termination1,decoratedId1,block1,m3)
@@ -480,13 +480,13 @@ and M(  itree(inode("program",_),
 (*semantics for assignStmt of form "identifier = expression"*)
   | M(  itree(inode("assignStmt",_),
         [
-            itree(inode(identifier,_),[]),
+            identifier,
             itree(inode("=",_),[]),
             expression1
         ]
     ), m0) = let
                 val (v,m1) = E'(expression1,m0)
-                val loc = getLoc(accessEnv(identifier,m1))
+                val loc = getLoc(accessEnv(getLeaf(identifier),m1))
             in
                 updateStore(loc,v,m1)
             end
@@ -495,14 +495,14 @@ and M(  itree(inode("program",_),
   | M(  itree(inode("assignStmt",_),
         [
             itree(inode("int",_),[]),
-            itree(inode(identifier,_),[]),
+            identifier,
             itree(inode("=",_),[]),
             expression1
         ]
     ), m) = let
-                val m1 = updateEnv(identifier,INT,m)
+                val m1 = updateEnv(getLeaf(identifier),INT,m)
                 val (v,m2) = E'(expression1,m1)
-                val loc = getLoc(accessEnv(identifier,m2))
+                val loc = getLoc(accessEnv(getLeaf(identifier),m2))
             in
                 updateStore(loc,v,m2)
             end
@@ -510,15 +510,15 @@ and M(  itree(inode("program",_),
 (*semantics for assignStmt of form "bool identifier = expression"*)
   | M(  itree(inode("assignStmt",_),
         [
-            itree(inode("bool",_),[]),
-            itree(inode(identifier,_),[]),
+            itree(inode("BOOL",_),[]),
+            identifier,
             itree(inode("=",_),[]),
             expression1
         ]
     ), m0) = let
-                val m1 = updateEnv(identifier,BOOL,m0)
+                val m1 = updateEnv(getLeaf(identifier),BOOL,m0)
                 val (v,m2) = E'(expression1,m0)
-                val loc = getLoc(accessEnv(identifier,m2))
+                val loc = getLoc(accessEnv(getLeaf(identifier),m2))
             in
                 updateStore(loc,v,m2)
             end
@@ -527,17 +527,17 @@ and M(  itree(inode("program",_),
   | M(  itree(inode("decStmt",_),
         [
             itree(inode("int",_),[]),
-            itree(inode(identifier,_),[])
+            identifier
         ]
-    ), m) = updateEnv(identifier,INT,m)
+    ), m) = updateEnv(getLeaf(identifier),INT,m)
     
 (*semantics for decStmt of form "bool identifier"*)
   | M(  itree(inode("decStmt",_),
         [
             itree(inode("BOOL",_),[]),
-            itree(inode(identifier,_),[])
+            identifier
         ]
-    ), m) = updateEnv(identifier,BOOL,m)
+    ), m) = updateEnv(getLeaf(identifier),BOOL,m)
     
 (*semantics for block*)
   | M(  itree(inode("block",_),
