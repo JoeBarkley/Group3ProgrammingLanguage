@@ -12,7 +12,7 @@ struct
 
 fun getLeaf( term ) = CONCRETE.leavesToStringRaw term 
 *)
-
+fun getLeaf( term ) = CONCRETE.leavesToStringRaw term 
 (* For your typeChecker you may want to have a datatype that defines the types 
   (i.e., integer, boolean and error) in your language. *)
 datatype types = INT | BOOL | ERROR;

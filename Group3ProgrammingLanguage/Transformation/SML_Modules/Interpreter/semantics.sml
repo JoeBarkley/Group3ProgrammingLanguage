@@ -147,9 +147,11 @@ fun E'( itree(inode("termination",_),
     ), m0) = let
                 val (v1,m1) = E'(logicalExp1,m0)
                 val (v2,m2) = E'(logicalTerm1,m1)
+                val v3 : bool = valOf(Bool.fromString(v1))
+                val v4 : bool = valOf(Bool.fromString(v2))
              in
-                if Bool.fromString(v1) then (true,m2)
-                else if Bool.fromString(v2) then (true,m2)
+                if v3 then (true,m2)
+                else if v4 then (true,m2)
                 else (false,m2)
              end
   
@@ -170,8 +172,10 @@ fun E'( itree(inode("termination",_),
     ), m0) = let
                 val (v1,m1) = E'(logicalTerm1,m0)
                 val (v2,m2) = E'(relationalExp1,m1)
+                val v3 : bool = valOf(Bool.fromString(v1))
+                val v4 : bool = valOf(Bool.fromString(v2))
              in
-                if Bool.fromString(v1) andalso Bool.fromString(v2) then (true,m2)
+                if v3 andalso v4 then (true,m2)
                 else (false,m2)
              end
 
@@ -341,8 +345,9 @@ fun E'( itree(inode("termination",_),
         ]
     ), m0) = let
                 val (v1,m1) = E'(exponentTerm1,m0)
+                val v2 : int = valOf(Int.fromString(v1))
              in
-                (~Int.fromString(v1),m1)
+                (~v2,m1)
              end
              
 (*evaluation for arithmetic entry of form "not exponentTerm"*)
@@ -353,8 +358,9 @@ fun E'( itree(inode("termination",_),
         ]
     ), m0) = let
                 val (v1,m1) = E'(exponentTerm1,m0)
+                val v2 : bool = valOf(Bool.fromString(v1))
              in
-                (not Bool.fromString(v1),m1)
+                (not v2,m1)
              end
              
 (*evaluation for arithmetic entry of form "exponentTerm"*)
@@ -374,8 +380,10 @@ fun E'( itree(inode("termination",_),
     ), m0) = let
                 val (v1,m1) = E'(exponentTerm1,m0)
                 val (v2,m2) = E'(baseTerm1,m1)
+                val v3 : int = valOf(Int.fromString(v1))
+                val v4 : int = valOf(Int.fromString(v1))
              in
-                (Math.exp(Int.fromString(v2),Int.fromString(v1)),m2)
+                (Math.exp(v3,v4),m2)
              end
              
 (*evaluation for exponent term of form "baseTerm"*)
@@ -404,9 +412,10 @@ fun E'( itree(inode("termination",_),
         ]
     ), m0) = let
                 val (v1,m1) = E'(expression1,m0)
+                val v2 : int = valOf(Int.fromString(v1))
              in
-                if Int.fromString(v1) < 0 then (~Int.fromString(v1),m1)
-                else (Int.fromString(v1),m1)
+                if v2 < 0 then (~v2,m1)
+                else (v2,m1)
              end
              
 (*evaluation for base term of form "identifier"*)
