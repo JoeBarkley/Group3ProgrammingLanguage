@@ -77,10 +77,10 @@ fun E'( itree(inode("termination",_),
             identifier
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(getLeaf(identifier),m0))
-                val v1 = accessStore(loc,m0)
+                val loca = getLoc(accessEnv(getLeaf(identifier),m0))
+                val v1 = accessStore(loca,m0)
                 val v2 = (v1 + 1)
-                val m1 = updateStore(loc,v2,m0)
+                val m1 = updateStore(loca,v2,m0)
              in
                 (v2,m1)
              end
@@ -92,10 +92,10 @@ fun E'( itree(inode("termination",_),
             identifier
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(getLeaf(identifier),m0))
-                val v1 = accessStore(loc,m0)
+                val loca = getLoc(accessEnv(getLeaf(identifier),m0))
+                val v1 = accessStore(loca,m0)
                 val v2 = (v1 - 1)
-                val m1 = updateStore(loc,v2,m0)
+                val m1 = updateStore(loca,v2,m0)
              in
                 (v2,m1)
              end
@@ -107,10 +107,10 @@ fun E'( itree(inode("termination",_),
             itree(inode("++",_),[])
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(getLeaf(identifier),m0))
-                val v1 = accessStore(loc,m0)
+                val loca = getLoc(accessEnv(getLeaf(identifier),m0))
+                val v1 = accessStore(loca,m0)
                 val v2 = (v1 + 1)
-                val m1 = updateStore(loc,v2,m0)
+                val m1 = updateStore(loca,v2,m0)
              in
                 (v1,m1)
              end
@@ -122,12 +122,12 @@ fun E'( itree(inode("termination",_),
             itree(inode("--",_),[])
         ]
     ), m0) = let
-                val loc = getLoc(accessEnv(getLeaf(identifier),m0))
-                val v1 = accessStore(loc,m0)
+                val loca = getLoc(accessEnv(getLeaf(identifier),m0))
+                val v1 = accessStore(loca,m0)
                 val v2 = (v1 - 1)
                 (*val m1 = updateStore(loc,v2,m0)*)
              in
-                (v1,updateStore(loc,v2,m0))
+                (v1,updateStore(loca,v2,m0))
              end
              
 (*evaluation for generic expression*)
@@ -196,8 +196,10 @@ fun E'( itree(inode("termination",_),
     ), m0) = let
                 val (v1,m1) = E'(relationalExp1,m0)
                 val (v2,m2) = E'(arithmeticExp1,m1)
+                val v3 : int = valOf(Int.fromString(v1))
+                val v4 : int = valOf(Int.fromString(v1))
              in
-                if Int.fromString(v1) = Int.fromString(v2) then (true,m2)
+                if v3 = v4 then (true,m2)
                 else (false,m2)
              end
              
@@ -381,9 +383,11 @@ fun E'( itree(inode("termination",_),
                 val (v1,m1) = E'(exponentTerm1,m0)
                 val (v2,m2) = E'(baseTerm1,m1)
                 val v3 : int = valOf(Int.fromString(v1))
-                val v4 : int = valOf(Int.fromString(v1))
+                val v4 : int = valOf(Int.fromString(v2))
+                val v5 : real = (Real.fromInt(v3))
+                val v6 : real = (Real.fromInt(v4))
              in
-                (Math.exp(v3,v4),m2)
+                (Math.pow(v6,v5),m2)
              end
              
 (*evaluation for exponent term of form "baseTerm"*)
