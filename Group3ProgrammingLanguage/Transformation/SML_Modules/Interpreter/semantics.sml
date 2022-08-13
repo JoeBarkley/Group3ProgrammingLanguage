@@ -534,10 +534,10 @@ and M(  itree(inode("program",_),
 (*semantics for decStmt of form "bool identifier"*)
   | M(  itree(inode("decStmt",_),
         [
-            itree(inode("bool",_),[]),
+            itree(inode("BOOL",_),[]),
             itree(inode(identifier,_),[])
         ]
-    ), m) = updateEnv(identifier,bool,m)
+    ), m) = updateEnv(identifier,BOOL,m)
     
 (*semantics for block*)
   | M(  itree(inode("block",_),
